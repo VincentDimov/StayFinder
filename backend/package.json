@@ -1,0 +1,23 @@
+{
+  "name": "@stayfinder/backend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "1.19.17",
+    "@stayfinder/shared": "1.0.0",
+    "dotenv": "17.2.3",
+    "hono": "4.13.12",
+    "pg": "8.16.3",
+    "zod": "4.1.13"
+  },
+  "devDependencies": {
+    "@types/pg": "8.15.6"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "stayfinder",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "db:start": "docker compose up -d --wait",
+    "db:setup": "tsx backend/scripts/setup.ts",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "test": "tsx --test backend/tests/integration.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "concurrently": "9.2.4",
+    "prettier": "3.9.9",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

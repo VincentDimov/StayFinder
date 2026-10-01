@@ -1,0 +1,192 @@
+# Kör med REST Client i VS Code. Starta API och databas först.
+# Kör uppifrån och ner. Använd framtida datum när du testar.
+# Konto-e-post kan ändras mellan körningar för att undvika 409 vid registrering.
+# Namngivna requests gör att följande anrop kan använda svarens ID och cookie.
+@base = http://localhost:4000
+@checkIn = 2027-01-10
+@checkOut = 2027-01-13
+
+### 201: registrera värd
+# @name hostRegister
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{"name":"API Värd","email":"api-vard@stayfinder.test","password":"StayFinder2026!"}
+
+### 201: registrera gäst
+# @name guestRegister
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{"name":"API Gäst","email":"api-gast@stayfinder.test","password":"StayFinder2026!"}
+
+### 200: inloggning värd, få sessionscookie
+# @name hostLogin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{"email":"api-vard@stayfinder.test","password":"StayFinder2026!"}
+
+### 200: inloggning gäst, separat sessionscookie
+# @name guestLogin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{"email":"api-gast@stayfinder.test","password":"StayFinder2026!"}
+
+### G2, 200: vem är inloggad?
+GET {{base}}/auth/me
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+### G6, 401: en anonym besökare får inte skapa boende
+# Stäng REST Clients automatiska cookiehantering eller använd separat anonym session.
+POST {{base}}/properties
+Content-Type: application/json
+Cookie: stayfinder_session=invalid
+
+{"title":"Testboende","description":"Ett bra testboende nära naturen.","location":"Teststad","price_per_night":1000,"max_guests":4}
+
+### G7, 201: skapa ett boende
+# @name createProperty
+POST {{base}}/properties
+Content-Type: application/json
+Cookie: {{hostLogin.response.headers.Set-Cookie}}
+
+{"title":"Testboende","description":"Ett bra testboende nära naturen.","location":"Teststad","price_per_night":1000,"max_guests":4}
+
+### G4/G5/G8, 200: publik lista, kombinerade filter och fallande pris
+GET {{base}}/properties?location=Teststad&max_price=1200&guests=3&sort=price_desc
+Cookie: stayfinder_session=invalid
+
+### G4, 200: detaljsida
+GET {{base}}/properties/{{createProperty.response.body.$.id}}
+
+### G14, 404: saknat boende
+GET {{base}}/properties/00000000-0000-4000-8000-000000000000
+
+### G10, 400: ogiltig e-post och noll gäster
+POST {{base}}/properties/{{createProperty.response.body.$.id}}/bookings
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"fel","guests":0,"check_in":"{{checkIn}}","check_out":"{{checkOut}}"}
+
+### G10, 400: incheckning efter utcheckning
+POST {{base}}/properties/{{createProperty.response.body.$.id}}/bookings
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"api-gast@stayfinder.test","guests":2,"check_in":"{{checkOut}}","check_out":"{{checkIn}}"}
+
+### VG3, 400: för många gäster
+POST {{base}}/properties/{{createProperty.response.body.$.id}}/bookings
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"api-gast@stayfinder.test","guests":5,"check_in":"{{checkIn}}","check_out":"{{checkOut}}"}
+
+### VG5, 400: passerad incheckning
+POST {{base}}/properties/{{createProperty.response.body.$.id}}/bookings
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"api-gast@stayfinder.test","guests":2,"check_in":"2020-01-01","check_out":"2020-01-03"}
+
+### G9/VG6, 201: boka; skickat pris 1 ignoreras, totalen blir 3000
+# @name createBooking
+POST {{base}}/properties/{{createProperty.response.body.$.id}}/bookings
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"api-gast@stayfinder.test","guests":2,"check_in":"{{checkIn}}","check_out":"{{checkOut}}","total_price":1}
+
+### VG2, 409 BOOKING_CONFLICT: samma period kan inte bokas igen
+POST {{base}}/properties/{{createProperty.response.body.$.id}}/bookings
+Content-Type: application/json
+Cookie: {{hostLogin.response.headers.Set-Cookie}}
+
+{"email":"api-vard@stayfinder.test","guests":1,"check_in":"{{checkIn}}","check_out":"{{checkOut}}"}
+
+### VG1, 404: gästen får inte ändra värdens boende
+PUT {{base}}/properties/{{createProperty.response.body.$.id}}
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"title":"Försök att ändra","description":"Det här ska nekas av databasen.","location":"Teststad","price_per_night":1,"max_guests":4}
+
+### VG4, 403: gästen får inte bekräfta bokningen
+PATCH {{base}}/bookings/{{createBooking.response.body.$.id}}/status
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"status":"confirmed"}
+
+### G12/VG1, 200: värden ser bokningar för sitt boende
+GET {{base}}/bookings?property_id={{createProperty.response.body.$.id}}
+Cookie: {{hostLogin.response.headers.Set-Cookie}}
+
+### VG2, 200: uppdatering med samma datum ska inte krocka med sig själv
+PUT {{base}}/bookings/{{createBooking.response.body.$.id}}
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"api-gast@stayfinder.test","guests":3,"check_in":"{{checkIn}}","check_out":"{{checkOut}}"}
+
+### VG6, 200: ändra boendets pris
+PUT {{base}}/properties/{{createProperty.response.body.$.id}}
+Content-Type: application/json
+Cookie: {{hostLogin.response.headers.Set-Cookie}}
+
+{"title":"Testboende","description":"Ett bra testboende nära naturen.","location":"Teststad","price_per_night":2000,"max_guests":4}
+
+### VG6, 200: bokningens total ska fortfarande vara 3000
+GET {{base}}/bookings
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+### VG7, 200: testboendet ska inte ingå i lediga resultat för bokad period
+GET {{base}}/properties?location=Teststad&max_price=2500&guests=2&sort=price_desc&check_in={{checkIn}}&check_out={{checkOut}}
+Cookie: stayfinder_session=invalid
+
+### VG7, 400: ogiltig sökperiod
+GET {{base}}/properties?check_in={{checkOut}}&check_out={{checkIn}}
+
+### VG4, 200: värden bekräftar
+PATCH {{base}}/bookings/{{createBooking.response.body.$.id}}/status
+Content-Type: application/json
+Cookie: {{hostLogin.response.headers.Set-Cookie}}
+
+{"status":"confirmed"}
+
+### VG4, 200: gästen avbokar
+PATCH {{base}}/bookings/{{createBooking.response.body.$.id}}/status
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"status":"cancelled"}
+
+### VG4, 400: avbokad bokning kan inte ändras
+PUT {{base}}/bookings/{{createBooking.response.body.$.id}}
+Content-Type: application/json
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+{"email":"api-gast@stayfinder.test","guests":2,"check_in":"{{checkIn}}","check_out":"{{checkOut}}"}
+
+### G12, 204: ta bort bokningen
+DELETE {{base}}/bookings/{{createBooking.response.body.$.id}}
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+### G6, 204: värden tar bort sitt boende
+DELETE {{base}}/properties/{{createProperty.response.body.$.id}}
+Cookie: {{hostLogin.response.headers.Set-Cookie}}
+
+### G1, 204: logga ut och återkalla sessionen
+POST {{base}}/auth/logout
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+### G1, 401: den återkallade cookien fungerar inte
+GET {{base}}/bookings
+Cookie: {{guestLogin.response.headers.Set-Cookie}}
+
+# Fler fall finns i npm test: direkt SQL/RLS, annan gästs osynliga bokning,
+# samtidiga bokningsförsök, angränsande datum, ändring som skapar överlappning,
+# påbörjad bokning, manipulation av ägare och pris samt kapacitetssänkning.
