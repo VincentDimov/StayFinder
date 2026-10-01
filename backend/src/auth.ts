@@ -2,8 +2,8 @@ import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypt
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { Context } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { authPool } from './db.js';
-import { env } from './env.js';
+import { authPool } from './db.ts';
+import { env } from './env.ts';
 import type { User } from '@stayfinder/shared';
 export type AppEnv = { Variables: { user: User | null } };
 export const hashToken = (token: string): string =>

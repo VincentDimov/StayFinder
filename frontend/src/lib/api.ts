@@ -1,5 +1,5 @@
 import type { ApiError } from '@stayfinder/shared';
-export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 export class ApiFailure extends Error {
   constructor(
     message: string,
@@ -19,6 +19,9 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       ...options.headers,
     },
   });
+  return readResponse<T>(response);
+}
+export async function readResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const data = (await response
       .json()

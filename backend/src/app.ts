@@ -3,8 +3,8 @@ import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
 import { HTTPException } from 'hono/http-exception';
 import { ZodError, type ZodType } from 'zod';
-import { env } from './env.js';
-import { database, authPool } from './db.js';
+import { env } from './env.ts';
+import { database, authPool } from './db.ts';
 import {
   createSession,
   passwordHash,
@@ -13,7 +13,7 @@ import {
   sessionUser,
   verifyPassword,
   type AppEnv,
-} from './auth.js';
+} from './auth.ts';
 import {
   registration,
   credentials,
@@ -22,7 +22,7 @@ import {
   statusInput,
   filters,
   uuid,
-} from './validation.js';
+} from './validation.ts';
 import type { Context } from 'hono';
 import type { Booking, Property, User } from '@stayfinder/shared';
 
@@ -49,7 +49,17 @@ app.use('*', bodyLimit({ maxSize: 32 * 1024 }));
 app.use('*', async (c, next) => {
   // SameSite cookies plus Origin validation protects cookie-authenticated mutations.
   const origin = c.req.header('Origin');
-  if (!['GET', 'HEAD', 'OPTIONS'].includes(c.req.method) && origin && origin !== env.frontendUrl)
+  const allowedOrigins = [
+    env.frontendUrl,
+    ...[process.env.VERCEL_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL]
+      .filter(Boolean)
+      .map((host) => `https://${host}`),
+  ];
+  if (
+    !['GET', 'HEAD', 'OPTIONS'].includes(c.req.method) &&
+    origin &&
+    !allowedOrigins.includes(origin)
+  )
     throw new HTTPException(403, { message: 'Anropets ursprung är inte tillåtet.' });
   c.header('Cache-Control', 'no-store');
   c.set('user', await sessionUser(c));

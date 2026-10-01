@@ -1,16 +1,18 @@
 import pg, { type PoolClient } from 'pg';
-import { env } from './env.js';
+import { env } from './env.ts';
 // pg returns bigint as strings by default. Prices are bounded to safe JS integers.
 pg.types.setTypeParser(20, (value: string) => Number(value));
 pg.types.setTypeParser(1082, (value: string) => value);
 export const pool = new pg.Pool({
   connectionString: env.databaseUrl,
-  max: 10,
+  max: env.production ? 2 : 10,
+  ssl: env.databaseCa ? { ca: env.databaseCa, rejectUnauthorized: true } : undefined,
   connectionTimeoutMillis: 5000,
 });
 export const authPool = new pg.Pool({
   connectionString: env.authDatabaseUrl,
-  max: 5,
+  max: env.production ? 2 : 5,
+  ssl: env.databaseCa ? { ca: env.databaseCa, rejectUnauthorized: true } : undefined,
   connectionTimeoutMillis: 5000,
 });
 // pg removes a disconnected idle client. Listening prevents its error event from

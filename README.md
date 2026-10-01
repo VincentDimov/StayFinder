@@ -52,7 +52,7 @@ docs/              Kriterier, arkitektur, kodgenomgång och verifiering
 
 ## Viktiga val
 
-- PostgreSQL används som det likvärdiga alternativ som uppgiften tillåter. Ingen Supabase-tjänst eller extern nyckel behövs.
+- PostgreSQL används som det likvärdiga alternativ som uppgiften tillåter. Lokalt används Docker. För Supabase används samma PostgreSQL-schema med separata begränsade databasroller och egna lösenord.
 - Ogenomskinliga sessioner lagras i databasen; webbläsaren får en `HttpOnly`-cookie. Lösenord lagras som saltade scrypt-hashar och sessionsnycklar som SHA-256-hashar.
 - API:t använder två begränsade databasroller. Rollen för boenden och bokningar saknar `SUPERUSER` och `BYPASSRLS`. Administratörsanslutningen används enbart vid setup och teststädning.
 - In- och utcheckning är kalenderdatum. PostgreSQL använder `Europe/Stockholm` för tidsregler. Utcheckningsdagen ingår inte i bokningen, så två gäster kan byta samma dag.
@@ -62,7 +62,7 @@ docs/              Kriterier, arkitektur, kodgenomgång och verifiering
 
 ## Inlämning
 
-Se [INLAMNING.md](docs/INLAMNING.md), [API-anrop](tests/api.http) och [guide för muntlig genomgång](docs/KODGENOMGANG.md). Backend och frontend finns i ett gemensamt repo med tydliga separata mappar. En publicerad repo-URL behöver fyllas i när ett GitHub-repo har valts. Den muntliga genomgången genomförs av dig: läs guiden, demonstrera appen och se till att du kan förklara koden.
+Se [INLAMNING.md](docs/INLAMNING.md), [API-anrop](tests/api.http) och [guide för muntlig genomgång](docs/KODGENOMGANG.md). Backend och frontend finns i ett gemensamt repo med tydliga separata mappar. GitHub-repo: [VincentDimov/StayFinder](https://github.com/VincentDimov/StayFinder). Den muntliga genomgången genomförs av dig: läs guiden, demonstrera appen och se till att du kan förklara koden.
 
 Lokala databaslösenord i Compose och `.env.example` är endast utvecklingsvärden. För extern drift ska egna databasroller/lösenord och HTTPS användas, och frontend/API bör ligga under samma webbplats för cookieflödet.
 
@@ -72,3 +72,9 @@ Lokala databaslösenord i Compose och `.env.example` är endast utvecklingsvärd
 - [Next.js installation](https://nextjs.org/docs/app/getting-started/installation), samt den installerade versionens dokumentation under `node_modules/next/dist/docs`
 - [PostgreSQL Row Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
 - [PostgreSQL Range Types och exclusion constraints](https://www.postgresql.org/docs/current/rangetypes.html)
+
+## Vercel och Supabase
+
+På Vercel körs Hono-API:t som en Next.js-route under /api. Webbläsaren använder samma domän för sidor och API, och serversidorna anropar Hono direkt. Vercel-projektet heter stayfinder och använder frontend som rotmapp. Databasvariablerna DATABASE_URL och AUTH_DATABASE_URL krävs på Vercel. DATABASE_CA används för verifierad TLS. Inga databasuppgifter skickas till webbläsaren.
+
+Supabase-projektets val och installation behöver slutföras innan produktionspubliceringen. Den lokala setupen innehåller utvecklingslösenord och ett demokonto och ska inte köras oförändrad mot molndatabasen.

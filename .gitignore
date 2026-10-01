@@ -3,7 +3,13 @@ node_modules/
 dist/
 .env
 .env.local
+.env.*.local
+.vercel/
+.cloud-secrets/
 *.log
 test-results/
 *.tsbuildinfo
 frontend/next-env.d.ts
+
+.vercel
+.env*

@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'node:url';
-dotenv.config({ path: fileURLToPath(new URL('../../.env', import.meta.url)), quiet: true });
+import { resolve } from 'node:path';
+dotenv.config({
+  path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../.env')],
+  quiet: true,
+});
+if (process.env.VERCEL && (!process.env.DATABASE_URL || !process.env.AUTH_DATABASE_URL)) {
+  throw new Error('DATABASE_URL and AUTH_DATABASE_URL must be configured on Vercel.');
+}
 export const env = {
   databaseUrl:
     process.env.DATABASE_URL ??
@@ -14,4 +20,5 @@ export const env = {
   port: Number(process.env.API_PORT ?? 4000),
   frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
   production: process.env.NODE_ENV === 'production',
+  databaseCa: process.env.DATABASE_CA?.replace(/\\n/g, '\n'),
 };

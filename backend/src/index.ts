@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
-import { app } from './app.js';
-import { env } from './env.js';
-import { pool, authPool } from './db.js';
+import { app } from './app.ts';
+import { env } from './env.ts';
+import { pool, authPool } from './db.ts';
 const server = serve({ fetch: app.fetch, port: env.port }, (info) =>
   console.log(`StayFinder API: http://localhost:${info.port}`),
 );

@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen \u0026\u0026 tsc --noEmit"
   },
   "dependencies": {
+    "@stayfinder/backend": "1.0.0",
     "next": "16.3.8",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "@stayfinder/shared": "1.0.0"
+    "@stayfinder/shared": "1.0.0",
+    "hono": "4.13.12"
   },
   "devDependencies": {
     "@types/react": "19.2.7",
