@@ -77,4 +77,6 @@ Lokala databaslösenord i Compose och `.env.example` är endast utvecklingsvärd
 
 På Vercel körs Hono-API:t som en Next.js-route under /api. Webbläsaren använder samma domän för sidor och API, och serversidorna anropar Hono direkt. Vercel-projektet heter stayfinder och använder frontend som rotmapp. Databasvariablerna DATABASE_URL och AUTH_DATABASE_URL krävs på Vercel. DATABASE_CA används för verifierad TLS. Inga databasuppgifter skickas till webbläsaren.
 
-Supabase-projektets val och installation behöver slutföras innan produktionspubliceringen. Den lokala setupen innehåller utvecklingslösenord och ett demokonto och ska inte köras oförändrad mot molndatabasen.
+Supabase-projektet [stayfinder](https://supabase.com/dashboard/project/xcniskfsojxkebdjbzkw) finns i organisationen Ventsislav Dimov, region eu-north-1. Appen publiceras på [stayfinder-tau-sepia.vercel.app](https://stayfinder-tau-sepia.vercel.app). Den lokala setupen innehåller utvecklingslösenord och ett demokonto och ska inte köras oförändrad mot molndatabasen.
+
+Molninstallationen använder unika databaslösenord, obligatorisk SSL och Supabases CA-certifikat. Autentisering och sessioner hanteras av appens Hono-server och lagras i Supabases privata schema; Supabase Auth används inte. Molnvärdens lösenord finns endast i den lokala, Git-ignorerade filen .cloud-secrets/demo-host.json. Det lokala utvecklingslösenordet gäller inte i molnet.

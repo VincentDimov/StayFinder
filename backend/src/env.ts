@@ -4,8 +4,11 @@ dotenv.config({
   path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../.env')],
   quiet: true,
 });
-if (process.env.VERCEL && (!process.env.DATABASE_URL || !process.env.AUTH_DATABASE_URL)) {
-  throw new Error('DATABASE_URL and AUTH_DATABASE_URL must be configured on Vercel.');
+if (
+  process.env.VERCEL &&
+  (!process.env.DATABASE_URL || !process.env.AUTH_DATABASE_URL || !process.env.DATABASE_CA)
+) {
+  throw new Error('DATABASE_URL, AUTH_DATABASE_URL and DATABASE_CA must be configured on Vercel.');
 }
 export const env = {
   databaseUrl:
