@@ -46,3 +46,7 @@ Skärmbilder finns under `screenshots/`. Tillfälliga integrations- och browsert
 ## Vad detta inte ersätter
 
 Repo- och driftlänkar finns i INLAMNING.md. Den muntliga kodgenomgången och betygssättningen kan inte genomföras av ett automatiskt test. Läraren bedömer också elevens egen förståelse. Molnpubliceringen verifierades 2026-10-02; se CLOUD_PUBLICERING.md.
+
+## Kompletterande webbläsartest av molnversionen, 2026-10-02
+
+Registrering/login/logout, bestående session, boendeformulär, kombinerade filter, bokningsformulär och dynamiska priser, valideringsfel, bokningsredigering, värdbekräftelse, gästavbokning, borttagning, laddningsvy, klient-/sidfel med återförsök samt egen 404 har nu kontrollerats i separata Chrome-testsessioner mot Vercel. Alla redovisade scenarier fungerade. Se [WEBBLASARTEST-2026-10-02.md](WEBBLASARTEST-2026-10-02.md) för aktuellt underlag. Testdata är städad och sessionswebbläsarna stängda.
