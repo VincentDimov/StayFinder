@@ -5,6 +5,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 const api = new Hono().route('/api', app);
+api.notFound((c) => c.json({ error: 'API-routen finns inte.', code: 'HTTP_404' }, 404));
 const handler = (request: Request) => api.fetch(request);
 export {
   handler as GET,

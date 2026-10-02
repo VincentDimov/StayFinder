@@ -45,4 +45,4 @@ Skärmbilder finns under `screenshots/`. Tillfälliga integrations- och browsert
 
 ## Vad detta inte ersätter
 
-Repo-URL måste anges när ett externt repo valts. Den muntliga kodgenomgången och betygssättningen kan inte genomföras av ett automatiskt test. Läraren bedömer också elevens egen förståelse. Extern drift ingår inte i den här lokala leveransen.
+Repo- och driftlänkar finns i INLAMNING.md. Den muntliga kodgenomgången och betygssättningen kan inte genomföras av ett automatiskt test. Läraren bedömer också elevens egen förståelse. Molnpubliceringen verifierades 2026-10-02; se CLOUD_PUBLICERING.md.
