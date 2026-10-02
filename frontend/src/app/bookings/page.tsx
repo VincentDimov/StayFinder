@@ -1,4 +1,5 @@
 import { BookingList } from '@/components/BookingList';
+// Visar bokningslistan som hämtar sessionsanvändarens bokningar på klienten.
 export default function Bookings() {
   return (
     <main className="section">

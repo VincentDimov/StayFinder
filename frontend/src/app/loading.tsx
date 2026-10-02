@@ -1,3 +1,4 @@
+// Visar en tillgänglig laddningsvy medan Next.js väntar på sidans serverdata.
 export default function Loading() {
   return (
     <main className="section" role="status">

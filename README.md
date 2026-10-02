@@ -1,6 +1,6 @@
 # StayFinder
 
-En bokningstjänst byggd utifrån **WEBB25 → Backend 2 – Typescript → Individuell Uppgift: StayFinder** i kursmaterialet `FullStackUtbildning/src/data/courseData.ts`, inklusive de sammanslagna G- och VG-kraven.
+En bokningstjänst byggd utifrån **WEBB25 → Backend 2 – Typescript → Individuell Uppgift: StayFinder** i kursmaterialet, inklusive de sammanslagna G- och VG-kraven.
 
 Projektet innehåller Hono-backend, Next.js-frontend och riktig PostgreSQL med RLS. Samtliga G1–G16 och VG1–VG7 är implementerade. Se [kriterielistan](docs/KRITERIER.md) för kodreferenser och [testprotokollet](docs/TESTPROTOKOLL.md) för vad som faktiskt har kontrollerats.
 
@@ -32,7 +32,7 @@ npm run build
 npm audit
 ```
 
-Testerna kräver en startad, initierad lokal databas. De använder tre tillfälliga konton och egna boenden; dessa tas bort efter körningen. De testar API-anrop och direkta SQL-anrop med applikationens begränsade databasroll, inklusive samtidiga bokningar. Kör dem mot en utvecklingsdatabas.
+Testerna kräver en startad, initierad lokal databas. De använder tre tillfälliga konton och egna boenden; dessa tas bort efter körningen. De testar API-anrop och direkta SQL-anrop med applikationens begränsade databasroll, inklusive samtidiga bokningar. Kommandot `npm test` kör via `backend/scripts/test.ts`, som alltid använder den lokala Docker-databasen på `localhost:54329` och egna tillfälliga testkonton. Supabase-anslutningar och CA-certifikat i `.env` påverkar inte testkörningen. Starta och initiera den lokala databasen enligt avsnittet ovan innan testerna körs.
 
 För att köra produktionsbygget lokalt: starta API:t med `npm run start -w backend` och webbappen med `npm run start -w frontend` i två terminaler efter `npm run build`.
 

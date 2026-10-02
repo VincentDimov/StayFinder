@@ -26,6 +26,7 @@ import {
 import type { Context } from 'hono';
 import type { Booking, Property, User } from '@stayfinder/shared';
 
+// Läser JSON och validerar det mot rätt Zod-schema. Felaktig JSON ger 400 före databasåtkomst.
 async function input<T>(c: Context, schema: ZodType<T>): Promise<T> {
   let data: unknown;
   try {
@@ -35,7 +36,9 @@ async function input<T>(c: Context, schema: ZodType<T>): Promise<T> {
   }
   return schema.parse(data);
 }
+// Skapar API:t. strict: false accepterar även rutter med avslutande snedstreck.
 export const app = new Hono<AppEnv>({ strict: false });
+// CORS tillåter den konfigurerade frontend-adressen att skicka sessionscookies och använda API-metoderna.
 app.use(
   '*',
   cors({
@@ -45,9 +48,11 @@ app.use(
     allowHeaders: ['Content-Type'],
   }),
 );
+// Begränsar request body till 32 KiB innan formulärdata behandlas.
 app.use('*', bodyLimit({ maxSize: 32 * 1024 }));
+// Kontrollerar ursprung för skrivande anrop, stänger av cache och läser sessionen före rutthanteraren.
 app.use('*', async (c, next) => {
-  // SameSite cookies plus Origin validation protects cookie-authenticated mutations.
+  // Origin-kontrollen kompletterar SameSite-cookien och motverkar ändringsanrop från andra webbplatser.
   const origin = c.req.header('Origin');
   const allowedOrigins = [
     env.frontendUrl,
@@ -65,14 +70,18 @@ app.use('*', async (c, next) => {
   c.set('user', await sessionUser(c));
   await next();
 });
+// Visar API:ts namn för ett enkelt rotanrop.
 app.get('/', (c) => c.json({ name: 'StayFinder API' }));
+// Kontrollerar att databasen svarar innan hälsostatus rapporteras som ok.
 app.get('/health', async (c) => {
   await authPool.query('SELECT 1');
   return c.json({ status: 'ok' });
 });
 
-// Bounded login attempts per email; reset after fifteen minutes or successful login.
+// Begränsar inloggningsförsök per e-post i denna serverprocess i 15 minuter.
+// Räknaren återställs vid lyckad inloggning och delas inte mellan olika serverinstanser.
 const attempts = new Map<string, { count: number; reset: number }>();
+// Skapar ett konto med hashat lösenord, startar en session och returnerar offentliga kontouppgifter.
 app.post('/auth/register', async (c) => {
   const data = await input(c, registration);
   const { rows } = await authPool.query<User>(
@@ -82,6 +91,7 @@ app.post('/auth/register', async (c) => {
   await createSession(c, rows[0].id);
   return c.json(rows[0], 201);
 });
+// Begränsar upprepade försök, verifierar lösenordet och skapar en ny session vid lyckad inloggning.
 app.post('/auth/login', async (c) => {
   const data = await input(c, credentials);
   const previous = attempts.get(data.email);
@@ -103,27 +113,33 @@ app.post('/auth/login', async (c) => {
   await createSession(c, id);
   return c.json({ id, email, name });
 });
+// Returnerar användaren från den verifierade sessionen, eller null för en anonym besökare.
 app.get('/auth/me', (c) => c.json({ user: c.get('user') }));
+// Återkallar sessionen och skickar ett tomt 204-svar.
 app.post('/auth/logout', async (c) => {
   await removeSession(c);
   return c.body(null, 204);
 });
 
+// Bygger en parametriserad sökning med plats, pris, kapacitet, lediga datum och kontrollerad prissortering.
 app.get('/properties', async (c) => {
   const f = filters.parse(c.req.query());
   const rows = await database(c.get('user')?.id ?? null, async (db) => {
     const values: unknown[] = [];
     const clauses: string[] = [];
+    // Skapar SQL-platshållare ($1, $2, …) och håller användarvärden åtskilda från frågans SQL.
     const parameter = (value: unknown): string => {
       values.push(value);
       return `$${values.length}`;
     };
+    // Escapar LIKE-jokertecken så att platsens text söks som text och inte som ett eget mönster.
     if (f.location)
       clauses.push(
         `location ILIKE ${parameter('%' + f.location.replace(/[\\%_]/g, '\\$&') + '%')}`,
       );
     if (f.max_price) clauses.push(`price_per_night <= ${parameter(f.max_price)}`);
     if (f.guests) clauses.push(`max_guests >= ${parameter(f.guests)}`);
+    // Tillgänglighetsfunktionen ser även andras bokningar men lämnar bara ut ett ja/nej-svar.
     if (f.check_in && f.check_out)
       clauses.push(
         `private.is_available(id, ${parameter(f.check_in)}::date, ${parameter(f.check_out)}::date)`,
@@ -137,6 +153,7 @@ app.get('/properties', async (c) => {
   });
   return c.json(rows);
 });
+// Läser ett offentligt boende via validerat ID och ger 404 om det saknas.
 app.get('/properties/:id', async (c) => {
   const id = uuid.parse(c.req.param('id'));
   const row = await database(
@@ -147,6 +164,7 @@ app.get('/properties/:id', async (c) => {
   if (!row) throw new HTTPException(404, { message: 'Boendet finns inte.' });
   return c.json(row);
 });
+// Skapar ett boende för den inloggade användaren. Ägarens ID hämtas från sessionen.
 app.post('/properties', async (c) => {
   const user = requireUser(c);
   const d = await input(c, propertyInput);
@@ -162,6 +180,7 @@ app.post('/properties', async (c) => {
   );
   return c.json(row, 201);
 });
+// Uppdaterar redigerbara boendefält. RLS gör att bara värdens egna rader kan ändras.
 app.put('/properties/:id', async (c) => {
   const user = requireUser(c);
   const id = uuid.parse(c.req.param('id'));
@@ -179,6 +198,7 @@ app.put('/properties/:id', async (c) => {
   if (!row) throw new HTTPException(404, { message: 'Boendet saknas eller tillhör någon annan.' });
   return c.json(row);
 });
+// Tar bort värdens boende. Databasens referensregel stoppar borttagning medan bokningar finns kvar.
 app.delete('/properties/:id', async (c) => {
   const user = requireUser(c);
   const id = uuid.parse(c.req.param('id'));
@@ -190,6 +210,7 @@ app.delete('/properties/:id', async (c) => {
   if (!row) throw new HTTPException(404, { message: 'Boendet saknas eller tillhör någon annan.' });
   return c.body(null, 204);
 });
+// Läser bokningar med boendetitel. RLS visar bara gästens egna eller värdens boendebokningar.
 app.get('/bookings', async (c) => {
   const user = requireUser(c);
   const propertyId = c.req.query('property_id');
@@ -206,6 +227,7 @@ app.get('/bookings', async (c) => {
   );
   return c.json(rows);
 });
+// Skapar en väntande bokning med sessionsanvändaren som gäst. Databastriggern ersätter priset 0 med beräknad total.
 app.post('/properties/:id/bookings', async (c) => {
   const user = requireUser(c);
   const id = uuid.parse(c.req.param('id'));
@@ -222,6 +244,7 @@ app.post('/properties/:id/bookings', async (c) => {
   });
   return c.json(row, 201);
 });
+// Ändrar kontaktuppgifter, gästantal och datum; databasen kontrollerar datum, överlappning och vem som får ändra.
 app.put('/bookings/:id', async (c) => {
   const user = requireUser(c);
   const id = uuid.parse(c.req.param('id'));
@@ -242,6 +265,7 @@ app.put('/bookings/:id', async (c) => {
     });
   return c.json(row);
 });
+// Begär bekräftelse eller avbokning. Triggern kontrollerar roll, tillåten statusövergång och incheckningsdatum.
 app.patch('/bookings/:id/status', async (c) => {
   const user = requireUser(c);
   const id = uuid.parse(c.req.param('id'));
@@ -262,6 +286,7 @@ app.patch('/bookings/:id/status', async (c) => {
     });
   return c.json(row);
 });
+// Tar bort en åtkomlig bokning; triggern förbjuder borttagning efter passerad incheckning.
 app.delete('/bookings/:id', async (c) => {
   const user = requireUser(c);
   const id = uuid.parse(c.req.param('id'));
@@ -276,8 +301,11 @@ app.delete('/bookings/:id', async (c) => {
     });
   return c.body(null, 204);
 });
+// Ger samma JSON-format för okända API-rutter som för andra API-fel.
 app.notFound((c) => c.json({ error: 'Resursen finns inte.', code: 'NOT_FOUND' }, 404));
+// Översätter valideringsfel, HTTP-fel och kända PostgreSQL-felkoder till begripliga svar.
 app.onError((error, c) => {
+  // Fältfel skickas med så att formuläret kan visa vad användaren behöver rätta.
   if (error instanceof ZodError)
     return c.json(
       {
@@ -290,13 +318,16 @@ app.onError((error, c) => {
   if (error instanceof HTTPException)
     return c.json({ error: error.message, code: `HTTP_${error.status}` }, error.status);
   const dbError = error as Error & { code?: string };
+  // Exclusion constraint stoppar överlappande bokningar, även när två anrop körs samtidigt.
   if (dbError.code === '23P01')
     return c.json(
       { error: 'Boendet är redan bokat under den valda perioden.', code: 'BOOKING_CONFLICT' },
       409,
     );
+  // Unikhetsfel uppstår här när e-postadressen redan är registrerad.
   if (dbError.code === '23505')
     return c.json({ error: 'E-postadressen används redan.', code: 'ALREADY_EXISTS' }, 409);
+  // Referensfel betyder att en relaterad resurs saknas eller hindrar borttagningen.
   if (dbError.code === '23503')
     return c.json(
       {
@@ -305,12 +336,16 @@ app.onError((error, c) => {
       },
       409,
     );
+  // Behörighetsfel från RLS eller triggern blir ett 403-svar.
   if (dbError.code === '42501')
     return c.json({ error: 'Du saknar behörighet för denna ändring.', code: 'FORBIDDEN' }, 403);
+  // Databasens egna bokningsregler har användaranpassade meddelanden som kan visas i formuläret.
   if (dbError.code === 'P0001')
     return c.json({ error: dbError.message, code: 'BOOKING_RULE' }, 400);
+  // Databasens CHECK-regler och ogiltiga datum ger ett valideringsfel.
   if (dbError.code === '23514' || dbError.code === '22007')
     return c.json({ error: 'Ogiltiga uppgifter.', code: 'VALIDATION' }, 400);
+  // Loggar oväntade fel på servern och skickar ett allmänt svar utan interna databasdetaljer.
   console.error('Unhandled API error:', error);
   return c.json({ error: 'Ett serverfel inträffade. Försök igen.', code: 'INTERNAL_ERROR' }, 500);
 });

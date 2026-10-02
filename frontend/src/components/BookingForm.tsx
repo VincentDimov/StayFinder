@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { type Property, type Booking, type BookingInput, nights, money } from '@stayfinder/shared';
 import { api, errorMessage } from '@/lib/api';
 import { useAuth } from './AuthProvider';
+// Används både för en ny bokning och för ändringar av en befintlig bokning.
 export function BookingForm({
   property,
   booking,
@@ -16,15 +17,18 @@ export function BookingForm({
 }) {
   const { user } = useAuth();
   const router = useRouter();
+  // Kontrollerade datumfält gör att antal nätter och prisförhandsvisning uppdateras direkt.
   const [start, setStart] = useState(booking?.check_in ?? '');
   const [end, setEnd] = useState(booking?.check_out ?? '');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const count = nights(start, end);
+  // Vid redigering används bokningens ursprungliga nattpris, även om boendets aktuella pris har ändrats.
   const rate = booking
     ? booking.total_price / nights(booking.check_in, booking.check_out)
     : property.price_per_night;
   const dateError = start && end && end <= start ? 'Utcheckning måste vara efter incheckning.' : '';
+  // Visar inloggning innan besökaren får fylla i en bokning.
   if (!user)
     return (
       <div className="panel">
@@ -35,8 +39,10 @@ export function BookingForm({
         </Link>
       </div>
     );
+  // Skickar bara gästens redigerbara uppgifter. Databasen fastställer pris, tillgänglighet och behörighet.
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Markerar att anropet pågår så att användaren inte skickar samma åtgärd flera gånger.
     setPending(true);
     setError('');
     const form = new FormData(event.currentTarget);
@@ -51,12 +57,15 @@ export function BookingForm({
         booking ? `/bookings/${booking.id}` : `/properties/${property.id}/bookings`,
         { method: booking ? 'PUT' : 'POST', body: JSON.stringify(data) },
       );
+      // Efter redigering uppdateras bokningslistan via callback; en ny bokning leder till bokningssidan.
       if (onSaved) onSaved();
       else router.push('/bookings');
       router.refresh();
     } catch (e) {
+      // Översätter anropsfelet till ett meddelande som kan visas i formuläret.
       setError(errorMessage(e));
     } finally {
+      // Återaktiverar knappen efter anropet, både vid framgång och vid fel.
       setPending(false);
     }
   }
@@ -72,6 +81,7 @@ export function BookingForm({
           </>
         )}
       </h2>
+      {/* Datumfälten styr den valda vistelsen och används tillsammans för att validera perioden. */}
       <div className="form-row">
         <label>
           Incheckning
@@ -120,6 +130,7 @@ export function BookingForm({
           defaultValue={booking?.email ?? user.email}
         />
       </label>
+      {/* Visar ett preliminärt totalpris; servern beräknar det slutliga priset. */}
       <div className="price-summary">
         <span>
           {count} {count === 1 ? 'natt' : 'nätter'} × {money(rate)}

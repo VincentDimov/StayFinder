@@ -13,7 +13,7 @@
     "db:setup": "tsx backend/scripts/setup.ts",
     "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
     "build": "npm run build -w backend && npm run build -w frontend",
-    "test": "tsx --test backend/tests/integration.test.ts"
+    "test": "tsx backend/scripts/test.ts"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

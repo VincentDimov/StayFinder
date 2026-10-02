@@ -1,6 +1,6 @@
 # Testprotokoll
 
-Verifierat den **1 oktober 2026**, i Windows med Node.js 22.20.0, Docker Desktop, PostgreSQL 17, Hono 4.13.12 och Next.js 16.3.8.
+Verifierat i Windows med Node.js 22.20.0, Docker Desktop, PostgreSQL 17, Hono 4.13.12 och Next.js 16.3.8.
 
 ## Automatiska kontroller
 

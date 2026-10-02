@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { money, type Property } from '@stayfinder/shared';
+// Visar ett länkat boendekort med bild, kapacitet, plats och formaterat nattpris.
 export function PropertyCard({ property, index = 0 }: { property: Property; index?: number }) {
   return (
     <Link href={`/properties/${property.id}`} className="property-card">
+      {/* Bildvarianten väljs från kortets index; de första bilderna laddas direkt och resten vid behov. */}
       <div className={`property-image scene-${index % 6}`}>
         <Image
           src="/cabin.svg"

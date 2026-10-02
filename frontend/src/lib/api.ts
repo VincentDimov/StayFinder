@@ -1,5 +1,7 @@
 import type { ApiError } from '@stayfinder/shared';
+// Webbläsaren använder samma webbplats via /api om ingen annan API-adress har konfigurerats.
 export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+// Bevarar HTTP-status och fältfel i ett Error-objekt som formulären kan visa.
 export class ApiFailure extends Error {
   constructor(
     message: string,
@@ -9,6 +11,7 @@ export class ApiFailure extends Error {
     super(message);
   }
 }
+// Skickar sessionscookies, undviker cache och anger JSON-format när anropet har en body.
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(apiUrl + path, {
     ...options,
@@ -21,6 +24,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   });
   return readResponse<T>(response);
 }
+// Tolkar API-svaret, omvandlar misslyckade anrop till ApiFailure och hanterar tomma 204-svar.
 export async function readResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const data = (await response
@@ -31,6 +35,7 @@ export async function readResponse<T>(response: Response): Promise<T> {
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
+// Gör okända fel och API-fel till läsbara meddelanden med svenska namn på formulärfälten.
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiFailure && error.fields) {
     const labels: Record<string, string> = {

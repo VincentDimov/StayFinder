@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import type { Property } from '@stayfinder/shared';
 import { api, errorMessage } from '@/lib/api';
 import { useAuth } from './AuthProvider';
+// Skapar ett nytt boende eller fyller formuläret med ett befintligt boende för redigering.
 export function PropertyForm({ property }: { property?: Property }) {
   const { user } = useAuth();
   const router = useRouter();
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
+  // Visar en inloggningslänk när besökaren saknar session. API:t kontrollerar också behörigheten.
   if (!user)
     return (
       <div className="empty">
@@ -20,13 +22,17 @@ export function PropertyForm({ property }: { property?: Property }) {
         </Link>
       </div>
     );
+  // Visar bara redigeringsformuläret för boendets värd; RLS skyddar även direktanrop till API:t.
   if (property && property.owner_id !== user.id)
     return <p className="error">Du kan bara ändra dina egna boenden.</p>;
+  // Skickar POST för ett nytt boende eller PUT för ett befintligt och öppnar därefter detaljsidan.
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Markerar att anropet pågår så att användaren inte skickar samma åtgärd flera gånger.
     setPending(true);
     setError('');
     const form = new FormData(event.currentTarget);
+    // Omvandlar formulärets pris och gästantal från text till tal innan API-valideringen.
     const data = {
       title: form.get('title'),
       description: form.get('description'),
@@ -42,8 +48,10 @@ export function PropertyForm({ property }: { property?: Property }) {
       router.push(`/properties/${result.id}`);
       router.refresh();
     } catch (e) {
+      // Översätter anropsfelet till ett meddelande som kan visas i formuläret.
       setError(errorMessage(e));
     } finally {
+      // Återaktiverar knappen efter anropet, både vid framgång och vid fel.
       setPending(false);
     }
   }
@@ -76,6 +84,7 @@ export function PropertyForm({ property }: { property?: Property }) {
           defaultValue={property?.location}
         />
       </label>
+      {/* Pris och kapacitet har samma grundgränser som backendens validering. */}
       <div className="form-row">
         <label>
           Pris per natt (SEK)

@@ -7,12 +7,14 @@ import { ApiFailure } from '@/lib/api';
 import { BookingForm } from '@/components/BookingForm';
 import { PropertyActions } from '@/components/PropertyActions';
 import { BookingList } from '@/components/BookingList';
+// Hämtar boendet på servern och visar beskrivning, värdåtgärder, bokningsformulär och behörighetsfiltrerade bokningar.
 export default async function Detail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let property: Property;
   try {
     property = await serverApi<Property>(`/properties/${id}`);
   } catch (e) {
+    // Ogiltigt eller saknat boende leder till 404-vyn. Andra fel lämnas till sidans felgräns.
     if (e instanceof ApiFailure && (e.status === 404 || e.status === 400)) notFound();
     throw e;
   }
@@ -33,6 +35,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
         />
         <span>En plats för upp till {property.max_guests} gäster</span>
       </div>
+      {/* Samlar boendets beskrivning och ägaråtgärder bredvid bokningsformuläret. */}
       <div className="detail-grid">
         <section>
           <h2>Välkommen till ditt nästa andrum.</h2>
@@ -46,6 +49,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
         </section>
         <BookingForm property={property} />
       </div>
+      {/* Listan visar bara de bokningar som besökaren har rätt att se genom API:ts RLS-kontroll. */}
       <section className="booking-section">
         <h2>Bokningar för detta boende</h2>
         <p>Som gäst ser du dina egna bokningar. Som värd ser du alla bokningar för ditt boende.</p>

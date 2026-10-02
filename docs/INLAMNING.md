@@ -16,8 +16,11 @@ Backend och frontend ligger tillsammans i detta lokala Git-repo.
 - [API-testanrop](../tests/api.http): lyckade och nekade HTTP-anrop med förväntade statuskoder.
 - [Automatiska tester](../backend/tests/integration.test.ts): API, direkt SQL, RLS och samtidighet.
 - [Testprotokoll](TESTPROTOKOLL.md).
+- [Ny kravkontroll 2026-10-02](KRAVKONTROLL_2026-10-02.md): kontroll av G1–G16, VG1–VG7 och inlämningsfilerna.
 - [Arkitektur och val av regelplacering](ARKITEKTUR.md).
 - [Guide för muntlig kodgenomgång](KODGENOMGANG.md).
+
+Repot är privat: ge läraren läsbehörighet innan inlämning.
 
 Den muntliga kodgenomgången och lärarens slutliga bedömning återstår och genomförs av eleven/läraren.
 

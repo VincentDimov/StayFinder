@@ -1,14 +1,19 @@
+# Startar en lokal PostgreSQL-databas för utveckling och tester. Supabase-inställningarna används separat via .env.
 services:
   db:
     image: postgres:17
+    # Skapar den lokala databasen och ett administratörskonto när datavolymen först initieras.
     environment:
       POSTGRES_DB: stayfinder
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: stayfinder_local_admin
+    # Binder databasen till den egna datorn på port 54329.
     ports:
       - '127.0.0.1:54329:5432'
+    # Sparar databasfiler i en namngiven Docker-volym mellan omstarter.
     volumes:
       - stayfinder_data:/var/lib/postgresql/data
+    # Väntar tills PostgreSQL svarar så att installationen inte körs mot en databas som fortfarande startar.
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d stayfinder']
       interval: 2s

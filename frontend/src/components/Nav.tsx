@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { errorMessage } from '@/lib/api';
+// Anpassar navigationen efter sessionen och visar inloggning eller användarens boende- och bokningslänkar.
 export function Nav() {
   const { user, logout } = useAuth();
   const [error, setError] = useState('');
@@ -14,6 +15,7 @@ export function Nav() {
         </Link>
         <nav aria-label="Huvudmeny">
           <Link href="/properties">Hitta boende</Link>
+          {/* Visar kontolänkar och utloggning för inloggade besökare; annars visas inloggning och registrering. */}
           {user ? (
             <>
               <Link href="/properties/new">Bli värd</Link>

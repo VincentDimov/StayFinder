@@ -5,14 +5,18 @@ import { type Booking, type Property, money } from '@stayfinder/shared';
 import { useAuth } from './AuthProvider';
 import { api, errorMessage } from '@/lib/api';
 import { BookingForm } from './BookingForm';
+// Översätter databasens statusvärden till svenska etiketter.
 const statuses = { pending: 'Väntande', confirmed: 'Bekräftad', cancelled: 'Avbokad' };
+// Visar användarens bokningar, antingen alla eller de som hör till ett valt boende. RLS begränsar svaret.
 export function BookingList({ propertyId }: { propertyId?: string }) {
   const { user } = useAuth();
+  // Håller listan, laddningsläget, fel, öppen redigering och den bokning vars åtgärd pågår i lokalt tillstånd.
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<{ booking: Booking; property: Property } | null>(null);
   const [busy, setBusy] = useState('');
+  // Hämtar bokningar med sessionscookien och återställer laddningsläget även vid fel.
   const load = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -30,14 +34,17 @@ export function BookingList({ propertyId }: { propertyId?: string }) {
       setLoading(false);
     }
   }, [user, propertyId]);
+  // Hämtar listan igen när användaren eller boendefiltret ändras.
   useEffect(() => {
     void load();
   }, [load]);
+  // Öppnar redigering eller skickar statusändring/borttagning och läser sedan in den uppdaterade listan.
   async function action(booking: Booking, kind: 'confirmed' | 'cancelled' | 'delete' | 'edit') {
     if (kind === 'delete' && !window.confirm('Vill du ta bort bokningen?')) return;
     setBusy(booking.id);
     setError('');
     try {
+      // Redigeringsformuläret behöver även boendets kapacitet och prisuppgifter.
       if (kind === 'edit') {
         setEditing({
           booking,
@@ -98,6 +105,7 @@ export function BookingList({ propertyId }: { propertyId?: string }) {
                 {b.guests} gäster · {money(b.total_price)}
               </p>
               <p className="muted">{b.email}</p>
+              {/* Knappvalen beror på gäst, värd och status. Databasen avgör dessutom vilka åtgärder som är tillåtna. */}
               <div className="actions">
                 {b.status !== 'cancelled' ? (
                   <>
@@ -140,6 +148,7 @@ export function BookingList({ propertyId }: { propertyId?: string }) {
           ))}
         </div>
       )}
+      {/* Öppnar samma bokningsformulär med befintliga värden och laddar om listan efter sparande. */}
       {editing ? (
         <section className="edit-booking">
           <h2>Ändra bokning</h2>

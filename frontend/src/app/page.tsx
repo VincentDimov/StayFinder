@@ -3,10 +3,12 @@ import Image from 'next/image';
 import type { Property } from '@stayfinder/shared';
 import { serverApi } from '@/lib/server-api';
 import { PropertyCard } from '@/components/PropertyCard';
+// Startsidan hämtar boenden på servern och visar sökning, utvalda kort och en länk för nya värdar.
 export default async function Home() {
   const properties = await serverApi<Property[]>('/properties');
   return (
     <main>
+      {/* Introducerar tjänsten med en huvudlänk till boenden och en prioriterad illustrationsbild. */}
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">NÄRA BORTA. LÅNGT FRÅN VARDAGEN.</span>
@@ -42,6 +44,7 @@ export default async function Home() {
           <span className="art-label">STAY A LITTLE LONGER ↗</span>
         </div>
       </section>
+      {/* Snabbsökningen skickar plats och gästantal som GET-parametrar till boendesidan. */}
       <section className="search-band">
         <form action="/properties" className="quick-search">
           <label>
@@ -65,6 +68,7 @@ export default async function Home() {
           </div>
           <Link href="/properties">Se alla boenden ↗</Link>
         </div>
+        {/* Visar högst sex boenden från API-listan; varje kort länkar till sin detaljsida. */}
         <div className="property-grid">
           {properties.slice(0, 6).map((p, i) => (
             <PropertyCard key={p.id} property={p} index={i} />
@@ -76,6 +80,7 @@ export default async function Home() {
           </p>
         ) : null}
       </section>
+      {/* Länkar till formuläret där en inloggad användare kan skapa ett eget boende. */}
       <section className="host-banner">
         <div>
           <span className="eyebrow">HAR DU EN PLATS ATT DELA?</span>

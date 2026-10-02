@@ -1,4 +1,5 @@
 import Link from 'next/link';
+// Visar en 404-vy och hjälper besökaren tillbaka till boendelistan.
 export default function NotFound() {
   return (
     <main className="section empty">

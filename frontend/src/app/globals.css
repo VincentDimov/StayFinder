@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+/* Gemensamma färger och designvariabler som återanvänds i sidans komponenter. */
 :root {
   --ink: #243a30;
   --green: #295b45;
@@ -9,9 +10,11 @@
   --white: #fff;
   --red: #a33b39;
 }
+/* Grundläggande boxmodell: padding och kantlinjer ingår i elementets storlek. */
 * {
   box-sizing: border-box;
 }
+/* Sidans grundtypografi, bakgrund och textfärg. */
 body {
   margin: 0;
   background: var(--paper);
@@ -20,6 +23,7 @@ body {
   font-size: 15px;
   line-height: 1.65;
 }
+/* Gemensamt utseende för länkar och formulärkontroller. */
 a {
   color: inherit;
   text-decoration: none;
@@ -44,6 +48,7 @@ button:disabled {
   opacity: 0.6;
   cursor: wait;
 }
+/* Rubrikernas typografi och styckenas läsavstånd. */
 h1,
 h2,
 h3 {
@@ -70,6 +75,7 @@ small {
   font-size: 12px;
   color: var(--muted);
 }
+/* Sidhuvud och navigation med varumärke, kontolänkar och användaruppgifter. */
 .site-header {
   border-bottom: 1px solid var(--line);
   background: var(--paper);
@@ -117,6 +123,7 @@ nav {
   color: var(--muted);
   font-size: 12px;
 }
+/* Knapparnas grundutseende samt sekundära, små och destruktiva varianter. */
 .button {
   display: inline-flex;
   gap: 32px;
@@ -156,6 +163,7 @@ nav {
   background: transparent;
   border-color: #e5c6c2;
 }
+/* Små sektionsetiketter som tydliggör sammanhanget ovanför rubriker. */
 .eyebrow {
   display: block;
   font-size: 10px;
@@ -163,6 +171,7 @@ nav {
   font-weight: 700;
   color: #68816d;
 }
+/* Startsidan placerar introduktion och bild bredvid varandra på breda skärmar. */
 .hero {
   max-width: 1280px;
   margin: auto;
@@ -202,6 +211,7 @@ nav {
   font-size: 18px;
   margin-right: 8px;
 }
+/* Illustrationens behållare, beskärning och textetiketter ovanpå bilden. */
 .hero-art {
   height: 480px;
   border-radius: 130px 12px 12px 12px;
@@ -241,6 +251,7 @@ nav {
   writing-mode: vertical-rl;
   color: #f3f5e8;
 }
+/* Snabbsökningen samlar plats, gästantal och sökknapp i ett rutnät. */
 .search-band {
   max-width: 1200px;
   margin: 0 auto 44px;
@@ -265,6 +276,7 @@ nav {
   width: 100%;
   font-size: 13px;
 }
+/* Gemensam bredd, marginal och mellanrum för sidornas innehållssektioner. */
 .section {
   max-width: 1280px;
   margin: auto;
@@ -286,6 +298,7 @@ nav {
   border-bottom: 1px solid var(--green);
   padding-bottom: 3px;
 }
+/* Boendekortens rutnät och kortens storlek, bilder och hovringseffekter. */
 .property-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -310,6 +323,7 @@ nav {
 .property-card:hover img {
   transform: scale(1.04);
 }
+/* Färgfilter ger samma lokala illustration olika visuella varianter på boendekorten. */
 .scene-1 img {
   filter: hue-rotate(30deg) saturate(0.65);
 }
@@ -345,6 +359,7 @@ nav {
   border-radius: 50%;
   background: #faf9f5e0;
 }
+/* Boendekortens plats, titel och pris under bilden. */
 .card-meta {
   display: flex;
   justify-content: space-between;
@@ -370,6 +385,7 @@ nav {
   font-weight: 400;
   color: var(--muted);
 }
+/* Startsidessektionen som länkar till publicering av ett eget boende. */
 .host-banner {
   max-width: 1200px;
   margin: 0 auto 64px;
@@ -390,6 +406,7 @@ nav {
   color: var(--muted);
   font-size: 13px;
 }
+/* Sidfot med varumärke och avslutande texter. */
 footer {
   max-width: 1200px;
   border-top: 1px solid var(--line);
@@ -409,6 +426,7 @@ footer .brand {
 footer p {
   margin: 0;
 }
+/* Söksidans rubrik och filterformulärets rutnätslayout. */
 .page-title {
   margin: 16px 0 32px;
 }
@@ -423,6 +441,7 @@ footer p {
 .filter-form .button {
   align-self: end;
 }
+/* Formulärfältens etiketter, inmatning, fokus och textytor. */
 label {
   display: flex;
   flex-direction: column;
@@ -443,6 +462,7 @@ textarea {
 textarea {
   resize: vertical;
 }
+/* Resultatantal, paneler och centrerade formulärsidor. */
 .result-count {
   font-size: 12px;
   color: var(--muted);
@@ -478,11 +498,13 @@ textarea {
 .form-stack > p > a {
   text-decoration: underline;
 }
+/* Placerar relaterade formulärfält på samma rad när skärmbredden tillåter det. */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
+/* Tomma resultat och felmeddelanden får tydliga egna ytor. */
 .empty {
   padding: 48px 24px;
   text-align: center;
@@ -500,6 +522,7 @@ textarea {
   border-radius: 6px;
   font-size: 13px;
 }
+/* Detaljsidans tillbaka-länk, stora bild och uppdelning mellan beskrivning och bokning. */
 .back-link {
   display: block;
   font-size: 12px;
@@ -547,6 +570,7 @@ textarea {
   font-size: 13px;
   margin: 26px 0;
 }
+/* Ordnar värdens åtgärder och bokningsknappar med flexlayout och radbrytning. */
 .owner-actions,
 .actions {
   display: flex;
@@ -561,6 +585,7 @@ textarea {
   font-weight: 400;
   letter-spacing: 0;
 }
+/* Bokningsformulärets sammanfattning av nätter och preliminärt totalpris. */
 .price-summary {
   display: flex;
   justify-content: space-between;
@@ -568,6 +593,7 @@ textarea {
   padding-top: 16px;
   font-size: 14px;
 }
+/* Bokningslistans kort, statusetiketter och område för redigering. */
 .booking-section {
   margin-top: 50px;
   border-top: 1px solid var(--line);
@@ -623,6 +649,7 @@ textarea {
   max-width: 600px;
   margin: 32px auto;
 }
+/* Laddningskort pulserar medan sidans data hämtas. */
 .skeleton {
   height: 270px;
   background: linear-gradient(100deg, #e8eadf, #f2f4ed, #e8eadf);
@@ -634,6 +661,7 @@ textarea {
     opacity: 0.4;
   }
 }
+/* Ger startsidans bild och innehåll mer utrymme på stora skärmar. */
 @media (min-width: 1400px) {
   .hero {
     padding-top: 64px;
@@ -642,6 +670,7 @@ textarea {
     height: 520px;
   }
 }
+/* Anpassar navigation, bildhöjd och mellanrum för mellanstora skärmar. */
 @media (max-width: 1000px) {
   nav {
     gap: 14px;
@@ -673,6 +702,7 @@ textarea {
     gap: 24px;
   }
 }
+/* Mobilanpassar navigation, sökning, kort, detaljsida och sidfot. */
 @media (max-width: 700px) {
   .nav-wrap {
     padding: 18px 20px;
@@ -805,6 +835,7 @@ textarea {
     letter-spacing: 1.6px;
   }
 }
+/* Visar kort och formulärfält i en kolumn på de smalaste skärmarna. */
 @media (max-width: 400px) {
   .property-grid {
     grid-template-columns: 1fr;
